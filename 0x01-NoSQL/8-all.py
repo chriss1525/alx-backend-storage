@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-# list all documents in a collection
+""" list all documents in a collection"""
 
 import pymongo
 
