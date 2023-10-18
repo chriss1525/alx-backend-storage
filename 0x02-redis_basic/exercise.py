@@ -58,3 +58,18 @@ class Cache:
 
     def get_int(self, key: str) -> int:
         return self.get(key, fn=int)
+
+    def replay(seld, method: Callable) -> None:
+        name = method.__qualname__
+        count_key = name
+        inputs_key = name + ":inputs"
+        outputs_key = name + ":outputs"
+
+        count = self.get(count_key, fn=int)
+        inputs = self.get(inputs_key, fn=str)
+        outputs = self.get(outputs_key, fn=str)
+
+        print(f"{name} was called {count} times:")
+
+        for i, o in zip(inputs, outputs):
+            print(f"{name}(*{i}) -> {o}")
