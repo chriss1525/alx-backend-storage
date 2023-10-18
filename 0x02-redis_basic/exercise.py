@@ -61,15 +61,15 @@ class Cache:
 
     def replay(self, method: Callable) -> None:
         name = method.__qualname__
-        count_key = name
         inputs_key = name + ":inputs"
         outputs_key = name + ":outputs"
 
-        count = self.get(count_key, fn=int)
-        inputs = self.get(inputs_key, fn=str)
-        outputs = self.get(outputs_key, fn=str)
+        count = self.__redis.lrange(inputs_key, 0, -1)
+        values = self.__redis.lrange(outputs_key, 0, -1)
 
-        print(f"{name} was called {count} times:")
-
-        for i, o in zip(inputs, outputs):
-            print(f"{name}(*{i}) -> {o}")
+        call_count = len(count)
+        print(f"{name} was called {call_count} times:")
+        for i in range(call_count):
+            input_args = count[i]
+            output_value = values[i]
+            print(f"{name}(*{input_args}) -> {output_value}")
