@@ -69,7 +69,8 @@ class Cache:
 
         call_count = len(count)
         print(f"{name} was called {call_count} times:")
-        for i in range(call_count):
-            input_args = count[i]
-            output_value = values[i]
-            print(f"{name}(*{input_args}) -> {output_value}")
+       
+        for i, (input, output) in enumerate(zip(count, values)):
+            input = input.decode("utf-8")
+            output = output.decode("utf-8")
+            print(f"{name}(*{input}) -> {output}")
