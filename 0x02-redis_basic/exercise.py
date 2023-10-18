@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 from typing import Union, Optional, Callable
 import redis
 from functools import wraps
@@ -31,7 +34,7 @@ def count_calls(method: Callable) -> Callable:
 
 
 class Cache:
-    def __init(self):
+    def __init__(self):
         self._redis = redis.Redis()
         self._redis.flushdb()
 
@@ -42,7 +45,9 @@ class Cache:
         self._redis.set(key, data)
         return key
 
-    def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+    def get(self,
+            key: str,
+            fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
         data = self._redis.get(key)
         if fn is not None:
             data = fn(data)
@@ -59,8 +64,8 @@ class Cache:
         inputs_key = name + ":inputs"
         outputs_key = name + ":outputs"
 
-        count = self._redis.lrange(inputs_key, 0, -1)
-        values = self._redis.lrange(outputs_key, 0, -1)
+        count = self.__redis.lrange(inputs_key, 0, -1)
+        values = self.__redis.lrange(outputs_key, 0, -1)
 
         call_count = len(count)
         print(f"{name} was called {call_count} times:")
