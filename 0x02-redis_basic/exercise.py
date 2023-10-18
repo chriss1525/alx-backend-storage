@@ -33,6 +33,19 @@ def count_calls(method: Callable) -> Callable:
     return wrapper
 
 
+def replay(method: Callable) -> None:
+    """Displays the history of calls of a particular function"""
+    method_key = method.__qualname__
+    inputs, outputs = method_key + ':inputs', method_key + ':outputs'
+    redis = method.__self__._redis
+    method_count = redis.get(method_key).decode('utf-8')
+    print(f'{method_key} was called {method_count} times:')
+    IOTuple = zip(redis.lrange(inputs, 0, -1), redis.lrange(outputs, 0, -1))
+    for inp, outp in list(IOTuple):
+        attr, data = inp.decode("utf-8"), outp.decode("utf-8")
+        print(f'{method_key}(*{attr}) -> {data}')
+
+
 class Cache:
     def __init__(self):
         self._redis = redis.Redis()
@@ -58,19 +71,3 @@ class Cache:
 
     def get_int(self, key: str) -> int:
         return self.get(key, fn=int)
-
-    def replay(self, method: Callable) -> None:
-        name = method.__qualname__
-        inputs_key = name + ":inputs"
-        outputs_key = name + ":outputs"
-
-        count = self.__redis.lrange(inputs_key, 0, -1)
-        values = self.__redis.lrange(outputs_key, 0, -1)
-
-        call_count = len(count)
-        print(f"{name} was called {call_count} times:")
-       
-        for i, (input, output) in enumerate(zip(count, values)):
-            input = input.decode("utf-8")
-            output = output.decode("utf-8")
-            print(f"{name}(*{input}) -> {output}")
