@@ -59,7 +59,7 @@ class Cache:
     def get_int(self, key: str) -> int:
         return self.get(key, fn=int)
 
-    def replay(seld, method: Callable) -> None:
+    def replay(self, method: Callable) -> None:
         name = method.__qualname__
         count_key = name
         inputs_key = name + ":inputs"
