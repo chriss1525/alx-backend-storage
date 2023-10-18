@@ -20,7 +20,7 @@ class Cache:
     def get(self, key: str, fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
         """get data from redis"""
         data = self._redis.get(key)
-        if fn:
+        if fn is not None:
             data = fn(data)
         return data
 
