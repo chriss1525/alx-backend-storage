@@ -7,8 +7,10 @@ from functools import wraps
 
 
 def call_history(method: Callable) -> Callable:
+    """ Decorator to store the history of inputs and outputs for a particular"""
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        """ Wrapper function to store the history of inputs and outputs for a particular"""
         name = method.__qualname__
         input_key = name + ":inputs"
         output_key = name + ":outputs"
@@ -25,12 +27,31 @@ def call_history(method: Callable) -> Callable:
 
 
 def count_calls(method: Callable) -> Callable:
+    """ Decorator to count the number of times a function has been called"""
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        """ Wrapper function to count the number of times a function has been called"""
         key = method.__qualname__
         self._redis.incr(key)
         return method(self, *args, **kwargs)
     return wrapper
+
+
+def replay(self, method: Callable) -> None:
+    """ Display the history of calls of a particular function"""
+    name = method.__qualname__
+    inputs_key = name + ":inputs"
+    outputs_key = name + ":outputs"
+
+    count = self.__redis.lrange(inputs_key, 0, -1)
+    values = self.__redis.lrange(outputs_key, 0, -1)
+
+    call_count = len(count)
+    print(f"{name} was called {call_count} times:")
+    for i in range(call_count):
+        input_args = count[i]
+        output_value = values[i]
+        print(f"{name}(*{input_args}) -> {output_value}")
 
 
 class Cache:
@@ -58,18 +79,3 @@ class Cache:
 
     def get_int(self, key: str) -> int:
         return self.get(key, fn=int)
-
-    def replay(self, method: Callable) -> None:
-        name = method.__qualname__
-        inputs_key = name + ":inputs"
-        outputs_key = name + ":outputs"
-
-        count = self.__redis.lrange(inputs_key, 0, -1)
-        values = self.__redis.lrange(outputs_key, 0, -1)
-
-        call_count = len(count)
-        print(f"{name} was called {call_count} times:")
-        for i in range(call_count):
-            input_args = count[i]
-            output_value = values[i]
-            print(f"{name}(*{input_args}) -> {output_value}")
