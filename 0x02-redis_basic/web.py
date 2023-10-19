@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+""" create a cache system with redis """
 import redis
 import requests
 
@@ -8,20 +8,15 @@ r = redis.Redis()
 
 
 def get_page(url: str) -> str:
-    count = f"count:{url}"
-
-    if r.exists(count):
-        r.incr(count)
-    else:
-        r.setex(count, 10, 1)
-
-    cached_contet = r.get(url)
-    if cached_contet:
-        return cached_contet.decode('utf-8')
-
+    """ get page """
+    count  = 0
+    
+    r.set(f"count:{url}", count)
     resp = requests.get(url)
-    content = resp.text
+    r.incr(f"count:{url}")
+    r.setex(f"cached: {url}", 10, r.get(f"cached: {url}"))
+    return resp.text
 
-    r.setex(url, 10, content)
 
-    return content
+if __name__ == "__main__":
+    get_page('http://slowwly.robertomurray.co.uk')

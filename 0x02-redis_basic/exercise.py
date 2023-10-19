@@ -1,14 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+""" simple class with basic redis """
 from typing import Union, Optional, Callable
 import redis
 from functools import wraps
 
 
 def call_history(method: Callable) -> Callable:
+    """ store the history of inputs and outputs for a particular function"""
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        """ wrapper function"""
         name = method.__qualname__
         input_key = name + ":inputs"
         output_key = name + ":outputs"
@@ -25,8 +28,10 @@ def call_history(method: Callable) -> Callable:
 
 
 def count_calls(method: Callable) -> Callable:
+    """counts how many times methods of the Cache class are called"""
     @wraps(method)
     def wrapper(self, *args, **kwargs):
+        """ wrapper function"""
         key = method.__qualname__
         self._redis.incr(key)
         return method(self, *args, **kwargs)
@@ -47,13 +52,17 @@ def replay(method: Callable) -> None:
 
 
 class Cache:
+    """ Cache class"""
+
     def __init__(self):
+        """ constructor"""
         self._redis = redis.Redis()
         self._redis.flushdb()
 
     @count_calls
     @call_history
     def store(self, data: Union[str, bytes, int, float]) -> str:
+        """ store data"""
         key = str(self._redis.incr("count"))
         self._redis.set(key, data)
         return key
@@ -61,13 +70,16 @@ class Cache:
     def get(self,
             key: str,
             fn: Optional[Callable] = None) -> Union[str, bytes, int, float]:
+        """ get data"""
         data = self._redis.get(key)
         if fn is not None:
             data = fn(data)
         return data
 
     def get_str(self, key: str) -> str:
+        """ get string"""
         return self.get(key, fn=str)
 
     def get_int(self, key: str) -> int:
+        """ get int"""
         return self.get(key, fn=int)
