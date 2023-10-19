@@ -6,6 +6,7 @@ import requests
 
 r = redis.Redis()
 
+
 def get_page(url: str) -> str:
     count = f"count:{url}"
 
@@ -24,8 +25,3 @@ def get_page(url: str) -> str:
     r.setex(url, 10, content)
 
     return content
-
-if __name__ == '__main__':
-    url = "http://slowwly.robertomurray.co.uk"
-    page_content = get_page(url)
-    print(page_content)
